@@ -39,13 +39,13 @@ else
     echo "Baixando Minecraft Bedrock Server..."
     echo ""
     
-    # URL do servidor Bedrock
-    URL="https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.32.2.zip"
-    echo "URL: $URL"
+    # URL do servidor Bedrock (Google Drive)
+    URL="https://drive.usercontent.google.com/download?id=12Re7KE9yfqpIjygSGKyC_4VmErgQmUd3&export=download&confirm=t"
+    echo "URL: Google Drive"
     echo ""
     
     echo "Baixando... (pode levar alguns minutos)"
-    curl -L --progress-bar --http1.1 --connect-timeout 30 --max-time 600 -o bedrock-server.zip "$URL"
+    curl -L --progress-bar --connect-timeout 30 --max-time 600 -o bedrock-server.zip "$URL"
     
     if [ -s "bedrock-server.zip" ]; then
         echo ""
