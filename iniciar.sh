@@ -31,7 +31,11 @@ mkdir -p servidor
 cd servidor
 
 # Verificar se bedrock_server ja existe
-if [ ! -f "bedrock_server" ]; then
+if [ -f "bedrock_server" ]; then
+    echo "Servidor ja existe! Pulando download..."
+    echo ""
+else
+    echo "Servidor nao encontrado. Baixando..."
     echo "Baixando Minecraft Bedrock Server..."
     echo ""
     
@@ -46,7 +50,7 @@ if [ ! -f "bedrock_server" ]; then
             echo "Extraindo arquivos..."
             unzip -o bedrock-server.zip 2>/dev/null || python3 -m zipfile -e bedrock-server.zip . 2>/dev/null || true
             rm -f bedrock-server.zip
-            echo "Download concluído!"
+            echo "Download concluido!"
         else
             echo "Download falhou - arquivo vazio"
             exit 1
