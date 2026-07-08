@@ -3,7 +3,7 @@
 # ================================================
 # Minecraft Bedrock Server - INICIAR
 # ================================================
-# Unico comando: bash iniciar.sh
+# Unico comando: npm start
 # ================================================
 
 set -e
@@ -35,56 +35,29 @@ if [ ! -f "bedrock_server" ]; then
     echo "Baixando Minecraft Bedrock Server..."
     echo ""
     
-    # URLS alternativas
-    URLS=(
-        "https://minecraft.azureedge.net/bin-linux/bedrock-server-1.21.40.zip"
-        "https://minecraft.net/content/minecraft.net/uploads/bedrock-server-1.21.40.zip"
-        "https://pocketserver.net/bedrock/bedrock-server-1.21.40.zip"
-    )
+    # URL do servidor Bedrock
+    URL="https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.32.2.zip"
+    echo "URL: $URL"
     
-    DOWNLOADED=0
-    for URL in "${URLS[@]}"; do
-        echo "Tentando: $URL"
-        if curl -L --connect-timeout 10 --max-time 120 -o bedrock-server.zip "$URL" 2>/dev/null; then
-            if [ -s "bedrock-server.zip" ]; then
-                DOWNLOADED=1
-                break
-            fi
+    if curl -L --http1.1 --connect-timeout 30 --max-time 300 -o bedrock-server.zip "$URL" 2>/dev/null; then
+        if [ -s "bedrock-server.zip" ]; then
+            echo ""
+            echo "Extraindo arquivos..."
+            unzip -o bedrock-server.zip 2>/dev/null || python3 -m zipfile -e bedrock-server.zip . 2>/dev/null || true
+            rm -f bedrock-server.zip
+            echo "Download concluído!"
+        else
+            echo "Download falhou - arquivo vazio"
+            exit 1
         fi
-        if command -v wget &>/dev/null; then
-            if wget -q -O bedrock-server.zip "$URL" 2>/dev/null; then
-                if [ -s "bedrock-server.zip" ]; then
-                    DOWNLOADED=1
-                    break
-                fi
-            fi
-        fi
-    done
-    
-    if [ "$DOWNLOADED" = "1" ]; then
-        echo ""
-        echo "Extraindo arquivos..."
-        unzip -o bedrock-server.zip 2>/dev/null || python3 -m zipfile -e bedrock-server.zip . 2>/dev/null || true
-        rm -f bedrock-server.zip
-        echo "Download concluído!"
     else
         echo ""
         echo "=========================================="
         echo "  ERRO: Falha no download"
         echo "=========================================="
         echo ""
-        echo "O Bedrock Server precisa ser enviado manualmente."
-        echo ""
-        echo "1. Baixe em:"
-        echo "   https://www.minecraft.net/bedrockdedicatedserver"
-        echo ""
-        echo "2. Extraia o conteudo para a pasta 'servidor/'"
-        echo ""
-        echo "3. Obedecedca a estrutura:"
-        echo "   servidor/"
-        echo "   ├── bedrock_server"
-        echo "   ├── server.properties"
-        echo "   └── ..."
+        echo "Baixe manualmente em:"
+        echo "https://www.minecraft.net/bedrockdedicatedserver"
         echo ""
         exit 1
     fi
