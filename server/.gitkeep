@@ -1,0 +1,9 @@
+# Esta pasta é preenchida pelo script setup.sh
+# Contém os arquivos do Minecraft Bedrock Dedicated Server
+
+# NÃO versionar arquivos grandes do servidor
+# Após executar setup.sh, o conteúdo será baixado da Microsoft/Mojang
+
+# Para limpar esta pasta e baixar novamente:
+# rm -rf server/*
+# ./setup.sh
