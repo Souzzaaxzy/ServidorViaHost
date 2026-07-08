@@ -39,9 +39,9 @@ else
     echo "Baixando Minecraft Bedrock Server..."
     echo ""
     
-    # URL do servidor Bedrock (Google Drive)
-    URL="https://drive.usercontent.google.com/download?id=12Re7KE9yfqpIjygSGKyC_4VmErgQmUd3&export=download&confirm=t"
-    echo "URL: Google Drive"
+    # URL do servidor Bedrock (GitHub Releases)
+    URL="https://github.com/Souzzaaxzy/ServidorViaHost/releases/download/v1.0.0/bedrock-server-1.26.32.2.zip"
+    echo "URL: GitHub Releases"
     echo ""
     
     echo "Baixando... (pode levar alguns minutos)"
