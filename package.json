@@ -1,0 +1,8 @@
+{
+  "name": "servidorviahost",
+  "version": "1.0.0",
+  "description": "Minecraft Bedrock Server",
+  "scripts": {
+    "start": "bash iniciar.sh"
+  }
+}
