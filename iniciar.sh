@@ -38,8 +38,9 @@ if [ ! -f "bedrock_server" ]; then
     # URL do servidor Bedrock
     URL="https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.32.2.zip"
     echo "URL: $URL"
+    echo ""
     
-    if curl -L --http1.1 --connect-timeout 30 --max-time 300 -o bedrock-server.zip "$URL" 2>/dev/null; then
+    if curl -L --http1.1 --connect-timeout 30 --max-time 600 -o bedrock-server.zip "$URL"; then
         if [ -s "bedrock-server.zip" ]; then
             echo ""
             echo "Extraindo arquivos..."
