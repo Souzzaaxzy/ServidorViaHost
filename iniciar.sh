@@ -26,10 +26,8 @@ esac
 echo "Sistema: $(uname) $ARCH_NAME"
 echo ""
 
-# Criar pasta servidor se nao existir
+# Criar pasta servidor
 mkdir -p servidor
-
-# Entrar na pasta
 cd servidor
 
 # Verificar se bedrock_server ja existe
@@ -37,16 +35,57 @@ if [ ! -f "bedrock_server" ]; then
     echo "Baixando Minecraft Bedrock Server..."
     echo ""
     
-    # Baixar servidor oficial
-    curl -L -o bedrock-server.zip "https://minecraft.azureedge.net/bin-linux/bedrock-server-1.21.40.zip" 2>/dev/null || \
-    wget -O bedrock-server.zip "https://minecraft.azureedge.net/bin-linux/bedrock-server-1.21.40.zip" 2>/dev/null || true
+    # URLS alternativas
+    URLS=(
+        "https://minecraft.azureedge.net/bin-linux/bedrock-server-1.21.40.zip"
+        "https://minecraft.net/content/minecraft.net/uploads/bedrock-server-1.21.40.zip"
+        "https://pocketserver.net/bedrock/bedrock-server-1.21.40.zip"
+    )
     
-    if [ -f "bedrock-server.zip" ] && [ -s "bedrock-server.zip" ]; then
+    DOWNLOADED=0
+    for URL in "${URLS[@]}"; do
+        echo "Tentando: $URL"
+        if curl -L --connect-timeout 10 --max-time 120 -o bedrock-server.zip "$URL" 2>/dev/null; then
+            if [ -s "bedrock-server.zip" ]; then
+                DOWNLOADED=1
+                break
+            fi
+        fi
+        if command -v wget &>/dev/null; then
+            if wget -q -O bedrock-server.zip "$URL" 2>/dev/null; then
+                if [ -s "bedrock-server.zip" ]; then
+                    DOWNLOADED=1
+                    break
+                fi
+            fi
+        fi
+    done
+    
+    if [ "$DOWNLOADED" = "1" ]; then
+        echo ""
+        echo "Extraindo arquivos..."
         unzip -o bedrock-server.zip 2>/dev/null || python3 -m zipfile -e bedrock-server.zip . 2>/dev/null || true
         rm -f bedrock-server.zip
         echo "Download concluído!"
     else
-        echo "Erro no download. Verifique sua conexao."
+        echo ""
+        echo "=========================================="
+        echo "  ERRO: Falha no download"
+        echo "=========================================="
+        echo ""
+        echo "O Bedrock Server precisa ser enviado manualmente."
+        echo ""
+        echo "1. Baixe em:"
+        echo "   https://www.minecraft.net/bedrockdedicatedserver"
+        echo ""
+        echo "2. Extraia o conteudo para a pasta 'servidor/'"
+        echo ""
+        echo "3. Obedecedca a estrutura:"
+        echo "   servidor/"
+        echo "   ├── bedrock_server"
+        echo "   ├── server.properties"
+        echo "   └── ..."
+        echo ""
         exit 1
     fi
 fi
@@ -57,9 +96,8 @@ chmod +x bedrock_server 2>/dev/null || true
 # Voltar ao diretorio principal
 cd "$SCRIPT_DIR"
 
-# Criar server.properties se nao existir
-if [ ! -f "servidor/server.properties" ]; then
-    cat > servidor/server.properties << 'EOF'
+# Criar server.properties
+cat > servidor/server.properties << 'EOF'
 server-name=ServidorViaHost Teste
 gamemode=survival
 difficulty=easy
@@ -69,7 +107,6 @@ tick-distance=4
 allow-cheats=true
 server-port=19132
 EOF
-fi
 
 echo ""
 echo "=========================================="
