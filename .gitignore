@@ -1,15 +1,15 @@
 # Minecraft Bedrock Server Files
 # Não versionar arquivos binários do servidor
-server/bedrock_server
-server/bedrock_server.exe
-server/bedrock_server.pdb
-server/*.so
-server/*.dll
-server/*.dylib
+servidor/bedrock_server
+servidor/bedrock_server.exe
+servidor/bedrock_server.pdb
+servidor/*.so
+servidor/*.dll
+servidor/*.dylib
 
 # Diretório de mundos
-server/worlds/
-server/world*/
+servidor/worlds/
+servidor/world*/
 
 # Logs
 *.log
@@ -23,7 +23,7 @@ logs/
 *.tmp
 *.temp
 
-# Node modules (se houver)
+# Node modules
 node_modules/
 
 # Docker
@@ -38,6 +38,5 @@ node_modules/
 # Mac
 .DS_Store
 
-# Pasta server completa (vai ser preenchida pelo setup.sh)
-# Manter apenas server.properties
-!server/server.properties
+# Manter apenas server.properties na pasta servidor
+!servidor/server.properties

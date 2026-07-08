@@ -1,68 +1,88 @@
 #!/bin/bash
 
 # ================================================
-# Minecraft Bedrock Dedicated Server - Start
+# Minecraft Bedrock Server - Start Script
 # ================================================
+# Este script verifica e inicia o servidor Bedrock
+# ================================================
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+echo "=========================================="
+echo "  Minecraft Bedrock Server"
+echo "=========================================="
+echo ""
+
+# Verificar se é Linux
+if [[ "$(uname)" != "Linux" ]]; then
+    echo "⚠️  Aviso: Sistema não é Linux"
+    echo "   Continuando mesmo assim..."
+    echo ""
+fi
+
+# Verificar se a pasta servidor existe
+if [ ! -d "servidor" ]; then
+    echo "📁 Pasta 'servidor' não encontrada."
+    echo "   Executando setup.sh..."
+    echo ""
+    bash setup.sh
+fi
+
+# Entrar na pasta do servidor
+cd "$SCRIPT_DIR/servidor"
+
+# Verificar se o executável bedrock_server existe
+if [ ! -f "bedrock_server" ]; then
+    echo "⚠️  bedrock_server não encontrado."
+    echo "   Executando setup.sh para baixar..."
+    echo ""
+    cd "$SCRIPT_DIR"
+    bash setup.sh
+    cd "$SCRIPT_DIR/servidor"
+fi
+
+# Dar permissão de execução ao bedrock_server
+if [ ! -x "bedrock_server" ]; then
+    echo "🔧 Configurando permissões do servidor..."
+    chmod +x bedrock_server
+    echo "✓ Permissões configuradas"
+    echo ""
+fi
+
+# Verificar server.properties
+if [ ! -f "server.properties" ]; then
+    echo "⚠️  server.properties não encontrado."
+    echo "   Criando configuração padrão..."
+    cat > server.properties << 'EOF'
+server-name=ServidorViaHost Teste
+gamemode=survival
+difficulty=easy
+max-players=5
+view-distance=6
+tick-distance=4
+allow-cheats=true
+server-port=19132
+level-name=Bedrock Level
+EOF
+    echo "✓ Configuração criada"
+    echo ""
+fi
 
 echo "=========================================="
 echo "  Iniciando Minecraft Bedrock Server"
 echo "=========================================="
-
-# Verificar se é Linux
-if [[ "$(uname)" != "Linux" ]]; then
-    echo "Erro: Este script é apenas para Linux!"
-    exit 1
-fi
-
-# Verificar se está no diretório correto
-if [ ! -d "server" ]; then
-    echo "Erro: Pasta 'server' não encontrada!"
-    echo "Execute setup.sh primeiro."
-    exit 1
-fi
-
-cd server
-
-# Verificar se o arquivo bedrock_server existe
-if [ ! -f "bedrock_server" ]; then
-    echo "Erro: bedrock_server não encontrado!"
-    echo "Execute setup.sh para baixar o servidor."
-    exit 1
-fi
-
-# Dar permissão de execução (caso ainda não tenha)
-if [ ! -x "bedrock_server" ]; then
-    echo "Dando permissão de execução ao bedrock_server..."
-    chmod +x bedrock_server
-fi
-
-# Verificar dependências
-echo "Verificando dependências..."
-
-# Verificar libcurl3 para distribuições antigas
-if ldconfig -p | grep -q "libcurl.so" || ldconfig -p | grep -q "libcurl.so.4"; then
-    echo "✓ libcurl encontrada"
-else
-    echo "! libcurl não encontrada, mas continuando..."
-fi
-
-# Criar symbolic link para библиотеки se necessário
-if [ -d "libs" ]; then
-    if [ ! -L "lib" ]; then
-        ln -sf libs lib
-    fi
-fi
-
 echo ""
-echo "=========================================="
-echo "  Servidor iniciando..."
-echo "=========================================="
+echo "📡 Porta: UDP 19132"
+echo "🎮 Conexão: Minecraft Bedrock Edition"
 echo ""
-echo "Para detener o servidor, pressione Ctrl+C"
-echo "Ou conecte-se via console e digite: stop"
+echo "Para parar: digite 'stop' no console"
+echo "Pressione Ctrl+C para forçar parada"
 echo ""
 echo "=========================================="
 echo ""
 
 # Iniciar o servidor
-./bedrock_server
+exec ./bedrock_server

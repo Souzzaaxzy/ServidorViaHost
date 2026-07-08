@@ -1,0 +1,20 @@
+{
+  "name": "servidorviahost",
+  "version": "1.0.0",
+  "description": "Minecraft Bedrock Server - Teste de hospedagem",
+  "main": "iniciar.sh",
+  "scripts": {
+    "iniciar": "bash iniciar.sh",
+    "setup": "bash setup.sh",
+    "start": "bash start.sh",
+    "test:udp": "node udp-test.js"
+  },
+  "keywords": [
+    "minecraft",
+    "bedrock",
+    "server",
+    "host"
+  ],
+  "author": "",
+  "license": "MIT"
+}
