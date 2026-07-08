@@ -44,17 +44,15 @@ else
     echo "URL: $URL"
     echo ""
     
-    if curl -L --http1.1 --connect-timeout 30 --max-time 600 -o bedrock-server.zip "$URL"; then
-        if [ -s "bedrock-server.zip" ]; then
-            echo ""
-            echo "Extraindo arquivos..."
-            unzip -o bedrock-server.zip 2>/dev/null || python3 -m zipfile -e bedrock-server.zip . 2>/dev/null || true
-            rm -f bedrock-server.zip
-            echo "Download concluido!"
-        else
-            echo "Download falhou - arquivo vazio"
-            exit 1
-        fi
+    echo "Baixando... (pode levar alguns minutos)"
+    curl -L --progress-bar --http1.1 --connect-timeout 30 --max-time 600 -o bedrock-server.zip "$URL"
+    
+    if [ -s "bedrock-server.zip" ]; then
+        echo ""
+        echo "Extraindo arquivos..."
+        unzip -o bedrock-server.zip 2>/dev/null || python3 -m zipfile -e bedrock-server.zip . 2>/dev/null || true
+        rm -f bedrock-server.zip
+        echo "Download concluido!"
     else
         echo ""
         echo "=========================================="
