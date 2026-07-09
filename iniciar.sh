@@ -32,22 +32,19 @@ cd servidor
 
 # Verificar se bedrock_server ja existe
 if [ -f "bedrock_server" ]; then
-    echo "Servidor ja existe! Pulando extracao..."
+    echo "Servidor ja extraido! Pulando..."
     echo ""
 else
-    echo "Servidor nao encontrado. Extraindo..."
+    echo "Extraindo Minecraft Bedrock Server..."
     echo ""
     
     if [ -f "bedrock-server.zip" ]; then
-        echo "Extraindo arquivos..."
         unzip -o bedrock-server.zip 2>/dev/null || python3 -m zipfile -e bedrock-server.zip . 2>/dev/null || true
         rm -f bedrock-server.zip
         echo "Extracao concluida!"
     else
         echo ""
-        echo "=========================================="
-        echo "  ERRO: Arquivo bedrock-server.zip nao encontrado"
-        echo "=========================================="
+        echo "ERRO: bedrock-server.zip nao encontrado!"
         echo ""
         exit 1
     fi
@@ -59,25 +56,55 @@ chmod +x bedrock_server 2>/dev/null || true
 # Voltar ao diretorio principal
 cd "$SCRIPT_DIR"
 
-# Criar server.properties
-cat > servidor/server.properties << 'EOF'
-server-name=ServidorViaHost Teste
+# Criar server.properties se nao existir
+if [ ! -f "servidor/server.properties" ]; then
+    cat > servidor/server.properties << 'EOF'
+server-name=ServidorViaHost
 gamemode=survival
 difficulty=easy
-max-players=5
+max-players=10
 view-distance=6
 tick-distance=4
 allow-cheats=true
 server-port=19132
 EOF
+fi
 
+# Obter IP
+echo "=========================================="
+echo "  INFORMACOES DE CONEXAO"
+echo "=========================================="
+echo ""
+
+# Tentar obter IP interno
+INTERNAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+if [ -z "$INTERNAL_IP" ]; then
+    INTERNAL_IP="127.0.0.1"
+fi
+
+# Tentar obter IP externo
+EXTERNAL_IP=$(curl -s --max-time 5 "https://api.ipify.org" 2>/dev/null || echo "")
+
+echo "IP INTERNO: $INTERNAL_IP"
+if [ -n "$EXTERNAL_IP" ]; then
+    echo "IP EXTERNO: $EXTERNAL_IP"
+fi
+echo ""
+echo "PORTA: 19132 (UDP)"
 echo ""
 echo "=========================================="
-echo "  Iniciando servidor..."
+echo "  COMO ENTRAR NO MINECRAFT"
 echo "=========================================="
 echo ""
-echo "Porta: UDP 19132"
-echo "Para parar: digite 'stop'"
+echo "1. Abra Minecraft Bedrock Edition"
+echo "2. Va em Jogar > Empresas"
+echo "3. Adicione servidor:"
+echo "   - Nome: ServidorViaHost"
+echo "   - Endereco: $INTERNAL_IP:19132"
+if [ -n "$EXTERNAL_IP" ]; then
+    echo ""
+    echo "   (Para conexao externa use: $EXTERNAL_IP:19132)"
+fi
 echo ""
 echo "=========================================="
 echo ""
