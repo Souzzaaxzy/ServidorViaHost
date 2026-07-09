@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Minecraft Bedrock Server com Playit.gg",
   "scripts": {
-    "start": "bash start.sh"
+    "start": "bash start-server.sh",
+    "install:playit": "bash install-playit.sh",
+    "install:bedrock": "bash install-bedrock.sh",
+    "install:all": "bash install-bedrock.sh && bash install-playit.sh"
   }
 }
