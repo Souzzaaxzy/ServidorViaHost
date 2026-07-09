@@ -1,8 +1,8 @@
 {
   "name": "servidorviahost",
   "version": "1.0.0",
-  "description": "Minecraft Bedrock Server",
+  "description": "Minecraft Bedrock Server com Playit.gg",
   "scripts": {
-    "start": "bash iniciar.sh"
+    "start": "bash start.sh"
   }
 }

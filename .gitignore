@@ -27,6 +27,9 @@ logs/
 # Node modules
 node_modules/
 
+# Playit.gg - não versionar agentes e configurações
+playit/
+
 # IDE
 .vscode/
 .idea/
