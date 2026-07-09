@@ -1,8 +1,9 @@
-# Minecraft Bedrock Server Files
-# Não versionar arquivos binários do servidor
+# Minecraft Bedrock - NÃO ignorar o zip
+# (ele contém o servidor que será extraído)
+
+# Arquivos extraídos do servidor
 servidor/bedrock_server
 servidor/bedrock_server.exe
-servidor/bedrock_server.pdb
 servidor/*.so
 servidor/*.dll
 servidor/*.dylib
@@ -26,9 +27,6 @@ logs/
 # Node modules
 node_modules/
 
-# Docker
-.dockerignore
-
 # IDE
 .vscode/
 .idea/
@@ -37,6 +35,3 @@ node_modules/
 
 # Mac
 .DS_Store
-
-# Manter apenas server.properties na pasta servidor
-!servidor/server.properties
