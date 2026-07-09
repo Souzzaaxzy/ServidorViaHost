@@ -1,0 +1,16 @@
+# Minekube Gate Configuration
+# https://connect.minekube.com/
+
+# Conectar ao servidor Minekube Connect (público e gratuito)
+edge:
+  address: connect.minekube.com:19132
+
+# Proxy Bedrock (Minecraft Edition)
+bedrock:
+  # Porta que o Gate vai escutar para Bedrock
+  # O Bedrock server vai rodar na 25566 para não conflitar
+  bind: 0.0.0.0:25566
+  
+  # Redirecionar para o servidor Bedrock local na porta 19132
+  backend:
+    address: 127.0.0.1:19132
