@@ -24,6 +24,9 @@ PLAYIT_BASE_URL="https://github.com/playit-cloud/playit-agent/releases/download/
 
 # Pasta do Playit
 PLAYIT_DIR="${SCRIPT_DIR}/playit"
+PLAYIT_LOG="${PLAYIT_DIR}/playit.log"
+PLAYIT_SOCKET="${PLAYIT_DIR}/playit.sock"
+PLAYIT_CONFIG="${PLAYIT_DIR}/playit.toml"
 
 # ================================================
 # VERIFICAR ARQUITETURA
@@ -51,8 +54,11 @@ case "$ARCH" in
 esac
 
 PLAYIT_FILE="playit-linux-${PLAYIT_ARCH}"
+PLAYIT_CLI_FILE="playit-cli-linux-${PLAYIT_ARCH}"
 PLAYIT_URL="${PLAYIT_BASE_URL}/${PLAYIT_FILE}"
+PLAYIT_CLI_URL="${PLAYIT_BASE_URL}/${PLAYIT_CLI_FILE}"
 PLAYIT_PATH="${PLAYIT_DIR}/${PLAYIT_FILE}"
+PLAYIT_CLI_PATH="${PLAYIT_DIR}/${PLAYIT_CLI_FILE}"
 
 echo "Sistema: $(uname) - $ARCH"
 echo "Playit: ${PLAYIT_FILE}"
@@ -67,27 +73,24 @@ mkdir -p servidor
 # ================================================
 # BAIXAR PLAYIT AGENT
 # ================================================
+# Baixar versão standalone
 if [ -f "$PLAYIT_PATH" ]; then
     echo "[PLAYIT] Agente já existe: ${PLAYIT_FILE}"
 else
     echo "[PLAYIT] Baixando agente..."
     echo "        URL: ${PLAYIT_URL}"
-    
-    if command -v wget &>/dev/null; then
-        wget -q --show-progress -O "$PLAYIT_PATH" "$PLAYIT_URL" 2>&1 || {
-            echo "[PLAYIT] Erro no download com wget, tentando curl..."
-            curl -fsSL -o "$PLAYIT_PATH" "$PLAYIT_URL"
-        }
-    else
-        curl -fsSL -o "$PLAYIT_PATH" "$PLAYIT_URL"
-    fi
-    
-    if [ $? -eq 0 ] && [ -f "$PLAYIT_PATH" ]; then
-        echo "[PLAYIT] Download concluído!"
-    else
-        echo "[PLAYIT] ERRO: Falha ao baixar o agente!"
-        exit 1
-    fi
+    curl -fsSL -o "$PLAYIT_PATH" "$PLAYIT_URL"
+    echo "[PLAYIT] Download concluído!"
+fi
+
+# Baixar versão CLI
+if [ -f "$PLAYIT_CLI_PATH" ]; then
+    echo "[PLAYIT] CLI já existe: ${PLAYIT_CLI_FILE}"
+else
+    echo "[PLAYIT] Baixando CLI..."
+    echo "        URL: ${PLAYIT_CLI_URL}"
+    curl -fsSL -o "$PLAYIT_CLI_PATH" "$PLAYIT_CLI_URL"
+    echo "[PLAYIT] Download da CLI concluído!"
 fi
 
 # ================================================
@@ -95,33 +98,36 @@ fi
 # ================================================
 echo "[PLAYIT] Configurando permissões..."
 chmod +x "$PLAYIT_PATH"
+chmod +x "$PLAYIT_CLI_PATH"
 
-# Criar link simbólico para facilitar
+# Links simbólicos
 ln -sf "$PLAYIT_PATH" "${PLAYIT_DIR}/playit" 2>/dev/null || true
+ln -sf "$PLAYIT_CLI_PATH" "${PLAYIT_DIR}/playit-cli" 2>/dev/null || true
 echo "[PLAYIT] Permissões configuradas!"
 
 # ================================================
 # VERIFICAR SE JÁ ESTÁ AUTENTICADO
 # ================================================
-# O Playit armazena credenciais em ~/.config/playit_gg/
-# Também cria arquivos de agente no diretório atual ou em ~/.config/playit_gg/
 NEEDS_AUTH=true
 
-# Verificar configuração global do Playit
-if [ -f "$HOME/.config/playit_gg/playit.toml" ]; then
+if [ -f "$PLAYIT_CONFIG" ] || [ -f "$HOME/.config/playit_gg/playit.toml" ]; then
     NEEDS_AUTH=false
     echo "[PLAYIT] Agente já autenticado!"
 fi
 
 # ================================================
-# INICIAR PLAYIT AGENT
+# INICIAR PLAYIT
 # ================================================
+echo ""
 echo "[PLAYIT] Iniciando túnel..."
+echo "[PLAYIT] Logs disponíveis em: ${PLAYIT_LOG}"
+echo ""
 
-# Mudar para diretório do Playit para que os arquivos fiquem lá
+# Limpar log
+> "$PLAYIT_LOG"
+
 cd "$PLAYIT_DIR"
 
-# Iniciar o Playit em segundo plano
 if [ "$NEEDS_AUTH" = true ]; then
     echo "[PLAYIT] Configurando..."
     echo "        Código: ${PLAYIT_SETUP_CODE}"
@@ -134,35 +140,46 @@ if [ "$NEEDS_AUTH" = true ]; then
         echo "Edite start.sh e defina PLAYIT_SETUP_CODE"
         echo "Obtenha seu código em: https://playit.gg/account"
         echo ""
-        echo "Iniciando em modo interativo..."
+        echo "Iniciando daemon em segundo plano..."
         echo ""
-        "$PLAYIT_PATH" &
+        # Iniciar daemon com socket local
+        "./${PLAYIT_FILE}" --socket-path "$PLAYIT_SOCKET" --secret-path "$PLAYIT_CONFIG" 2>&1 | tee "$PLAYIT_LOG" &
     else
-        "$PLAYIT_PATH" --setup-code "$PLAYIT_SETUP_CODE" &
+        # Iniciar com setup code
+        "./${PLAYIT_CLI_PATH}" --setup-code "$PLAYIT_SETUP_CODE" --socket-path "$PLAYIT_SOCKET" --secret-path "$PLAYIT_CONFIG" 2>&1 | tee "$PLAYIT_LOG" &
     fi
 else
-    # Já está autenticado, apenas iniciar
-    "$PLAYIT_PATH" &
+    # Já autenticado, iniciar daemon
+    "./${PLAYIT_FILE}" --socket-path "$PLAYIT_SOCKET" --secret-path "$PLAYIT_CONFIG" 2>&1 | tee "$PLAYIT_LOG" &
 fi
 
-# Voltar ao diretório do script
+# Guardar PID
+PLAYIT_PID=$!
+
 cd "$SCRIPT_DIR"
 
-# Aguardar um momento para o Playit iniciar
-sleep 2
+# Aguardar
+sleep 3
 
-echo "[PLAYIT] Túnel iniciado em segundo plano!"
+# Verificar
+if ps -p $PLAYIT_PID > /dev/null 2>&1; then
+    echo "[PLAYIT] Túnel iniciado!"
+    echo "[PLAYIT] PID: $PLAYIT_PID"
+else
+    echo "[PLAYIT] AVISO: O agente pode ter fechado."
+    echo "[PLAYIT] Verifique os logs em: ${PLAYIT_LOG}"
+fi
+
+echo ""
 
 # ================================================
 # PREPARAR SERVIDOR BEDROCK
 # ================================================
-echo ""
 echo "[BEDROCK] Preparando servidor..."
 echo ""
 
 cd servidor
 
-# Verificar se bedrock_server ja existe
 if [ -f "bedrock_server" ]; then
     echo "[BEDROCK] Servidor já extraído!"
 else
@@ -178,14 +195,12 @@ else
     fi
 fi
 
-# Dar permissão
 chmod +x bedrock_server 2>/dev/null || true
 
-# Voltar ao diretório principal
 cd "$SCRIPT_DIR"
 
 # ================================================
-# CRIAR/ATUALIZAR SERVER.PROPERTIES
+# CRIAR SERVER.PROPERTIES
 # ================================================
 if [ ! -f "servidor/server.properties" ]; then
     cat > servidor/server.properties << 'EOF'
@@ -205,19 +220,8 @@ EOF
 fi
 
 # ================================================
-# OBTER INFORMAÇÕES DE REDE
-# ================================================
-INTERNAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
-if [ -z "$INTERNAL_IP" ]; then
-    INTERNAL_IP="127.0.0.1"
-fi
-
-EXTERNAL_IP=$(curl -s --max-time 5 "https://api.ipify.org" 2>/dev/null || echo "")
-
-# ================================================
 # INICIAR SERVIDOR BEDROCK
 # ================================================
-echo ""
 echo "[BEDROCK] Iniciando servidor..."
 echo ""
 
