@@ -67,18 +67,48 @@ view-distance=6
 tick-distance=4
 allow-cheats=true
 server-port=19132
+server-portv6=19133
+enable-query=true
+query.port=19132
+rcon.port=19133
 EOF
 fi
 
-# Obter IP
+# Obter IPs
 INTERNAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
 if [ -z "$INTERNAL_IP" ]; then
-    INTERNAL_IP="localhost"
+    INTERNAL_IP="127.0.0.1"
 fi
 
 EXTERNAL_IP=$(curl -s --max-time 5 "https://api.ipify.org" 2>/dev/null || echo "")
 
+# Verificar rede
 echo ""
+echo "=========================================="
+echo "  VERIFICANDO REDE..."
+echo "=========================================="
+echo ""
+echo "IP INTERNO: $INTERNAL_IP"
+if [ -n "$EXTERNAL_IP" ]; then
+    echo "IP EXTERNO: $EXTERNAL_IP"
+fi
+echo "PORTA: 19132 (UDP)"
+echo ""
+
+# Testar se porta está aberta
+if command -v nc &>/dev/null; then
+    echo "Testando porta UDP..."
+    if nc -zvu $INTERNAL_IP 19132 2>/dev/null; then
+        echo "PORTA 19132: ABERTA"
+    else
+        echo "PORTA 19132: FECHADA ou BLOQUEADA"
+    fi
+else
+    echo "Ferramenta de teste nao disponivel"
+fi
+echo ""
+
+# Verificar se o bedrock_server aceita conexoes
 echo "=========================================="
 echo "  SERVIDOR INICIADO!"
 echo "=========================================="
@@ -103,11 +133,13 @@ echo ""
 echo "4. Preencha:"
 echo "   Nome: ServidorViaHost"
 if [ -n "$EXTERNAL_IP" ]; then
-    echo "   Endereco: $EXTERNAL_IP:19132"
+    echo "   Endereco: $EXTERNAL_IP"
 else
-    echo "   Endereco: $INTERNAL_IP:19132"
+    echo "   Endereco: $INTERNAL_IP"
 fi
 echo "   Porta: 19132"
+echo ""
+echo "5. IMPORTANTE: Libere a porta 19132/UDP no firewall do host!"
 echo ""
 echo "=========================================="
 echo ""
